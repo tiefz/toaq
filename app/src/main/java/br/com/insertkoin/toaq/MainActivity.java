@@ -1,92 +1,119 @@
 package br.com.insertkoin.toaq;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Vibrator;
-import android.util.SparseArray;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.gms.vision.CameraSource;
-import com.google.android.gms.vision.Detector;
-import com.google.android.gms.vision.barcode.Barcode;
-import com.google.android.gms.vision.barcode.BarcodeDetector;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.IOException;
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    SurfaceView surfaceView;
-    CameraSource cameraSource;
-    TextView textView;
-    BarcodeDetector barcodeDetector;
-
-
+    private static final int MY_REQUEST_COODE = 6996;
+    Button openCamera;
+    Button buttonSignOut;
+    TextView loginCheck;
+    private FirebaseAuth mAuth;
+    List<AuthUI.IdpConfig> providers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        surfaceView = findViewById(R.id.cameraPreview);
-        textView = findViewById(R.id.TextView1);
+        providers = Arrays.asList(
+                new AuthUI.IdpConfig.EmailBuilder().build(),
+                new AuthUI.IdpConfig.PhoneBuilder().build()
+        );
 
-        barcodeDetector = new BarcodeDetector.Builder(this)
-                .setBarcodeFormats(Barcode.QR_CODE).build();
-        cameraSource = new CameraSource.Builder(this, barcodeDetector)
-                .setRequestedPreviewSize(640,480).build();
+        loginCheck = findViewById(R.id.loginCheck);
+        mAuth = FirebaseAuth.getInstance();
 
-        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+        buttonSignOut = findViewById(R.id.buttonSignOut);
+        buttonSignOut.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-                    return;
-                }
-                try {
-                    cameraSource.start(holder);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-            }
-
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-                cameraSource.stop();
+            public void onClick(View v) {
+                AuthUI.getInstance().signOut(MainActivity.this)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                buttonSignOut.setEnabled(false);
+                                showSignInOptions();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MainActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 
-        barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
-            @Override
-            public void release() {
+        openCamera = findViewById(R.id.buttonOpenCamera);
+        openCamera.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(MainActivity.this, QRCamera.class);
+            MainActivity.this.startActivity(intent);
+        }
+    });
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        updateUI(currentUser);
+    }
+
+    private void updateUI(FirebaseUser user) {
+        if (user != null) {
+            loginCheck.setText("Logado");
+        } else {
+            //Intent intent = new Intent(this, LoginActivity.class);
+            //startActivity(intent);
+            //finish();
+            loginCheck.setText("Deslogado");
+            showSignInOptions();
+        }
+    }
+
+    private void showSignInOptions() {
+        startActivityForResult(
+                AuthUI.getInstance().createSignInIntentBuilder()
+                .setAvailableProviders(providers).build(),MY_REQUEST_COODE
+        );
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == MY_REQUEST_COODE) {
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+            if (resultCode == RESULT_OK) {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                Toast.makeText(this,""+user.getEmail(), Toast.LENGTH_SHORT).show();
+                buttonSignOut.setEnabled(true);
+            } else {
+                Toast.makeText(this, ""+response.getError().getMessage(), Toast.LENGTH_SHORT).show();
             }
-
-            @Override
-            public void receiveDetections(Detector.Detections<Barcode> detections) {
-                final SparseArray<Barcode> qrCodes = detections.getDetectedItems();
-                if (qrCodes.size() !=0) {
-                    textView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
-                            vibrator.vibrate(1000);
-                            textView.setText(qrCodes.valueAt(0).displayValue);
-                        }
-                    });
-                }
-            }
-        });
-
+        }
     }
 }

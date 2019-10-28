@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "884751503920-ffnsr3hja6320htmhm1ssjpod3rbu2jh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.insertkoin.toaq",
+            "certificate_hash": "e8ebed4820d47910ccefb8b081415c313e268795"
+          }
+        },
+        {
           "client_id": "884751503920-v1kbt5trl9sj702gnbdo0r9noejmj83e.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
