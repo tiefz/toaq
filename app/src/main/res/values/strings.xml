@@ -13,4 +13,5 @@
     <string  name="carregando">Carregando...</string>
     <string name="entrar">Entrar</string>
     <string name="cadastre">Esqueceu sua senha?</string>
+    <string name="recuperacao">Resetar Senha</string>
 </resources>

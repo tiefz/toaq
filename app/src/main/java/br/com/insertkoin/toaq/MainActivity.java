@@ -26,23 +26,16 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int MY_REQUEST_COODE = 6996;
     private static final String TAG = "EmailPassword";
     Button openCamera;
     Button buttonSignOut;
     TextView loginCheck;
     private FirebaseAuth mAuth;
-    List<AuthUI.IdpConfig> providers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        providers = Arrays.asList(
-                //new AuthUI.IdpConfig.PhoneBuilder().build(),
-                new AuthUI.IdpConfig.EmailBuilder().build()
-        );
 
         loginCheck = findViewById(R.id.loginCheck);
         mAuth = FirebaseAuth.getInstance();
@@ -51,19 +44,6 @@ public class MainActivity extends AppCompatActivity {
         buttonSignOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                AuthUI.getInstance().signOut(MainActivity.this)
-//                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<Void> task) {
-//                                buttonSignOut.setEnabled(false);
-//                                showSignInOptions();
-//                            }
-//                        }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Toast.makeText(MainActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
-//                    }
-//                });
                 mAuth.signOut();
                 updateUI(null);
             }
@@ -104,31 +84,9 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, Login.class);
             startActivity(intent);
             finish();
-            //showSignInOptions();
         }
     }
 
-    private void showSignInOptions() {
-        startActivityForResult(
-                AuthUI.getInstance().createSignInIntentBuilder()
-                .setAvailableProviders(providers).build(),MY_REQUEST_COODE
-        );
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MY_REQUEST_COODE) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-            if (resultCode == RESULT_OK) {
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                Toast.makeText(this,""+user.getEmail(), Toast.LENGTH_SHORT).show();
-                buttonSignOut.setEnabled(true);
-            } else {
-                Toast.makeText(this, ""+response.getError().getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 
     private void sendEmailVerification() {
 

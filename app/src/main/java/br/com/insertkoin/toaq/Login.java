@@ -19,7 +19,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class Login extends Base {
+public class Login extends Base implements ResetPassword.ResetPasswordInterface {
 
     private static final String TAG = "EmailPassword";
     private FirebaseAuth mAuth;
@@ -43,6 +43,14 @@ public class Login extends Base {
             @Override
             public void onClick(View v) {
                 signIn(inputEmail.getText().toString(), inputSenha.getText().toString());
+            }
+        });
+
+        forgotPassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ResetPassword resetPassword = new ResetPassword();
+                resetPassword.show(getSupportFragmentManager(), "resetPassword");
             }
         });
 
@@ -123,4 +131,21 @@ public class Login extends Base {
     }
 
 
+    @Override
+    public void onButtonClicked(String text) {
+        mAuth.sendPasswordResetEmail(text).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                showProgressDialog();
+                if(task.isSuccessful()){
+                    hideProgressDialog();
+                    Toast.makeText(Login.this,"Email de recuperação enviado com Sucesso!",Toast.LENGTH_SHORT).show();
+                } else {
+                    hideProgressDialog();
+                    Toast.makeText(Login.this,"Falha ao enviar email de recuperação",Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+    }
 }
