@@ -2,6 +2,7 @@ package br.com.insertkoin.toaq;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,6 +27,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final int MY_REQUEST_COODE = 6996;
+    private static final String TAG = "EmailPassword";
     Button openCamera;
     Button buttonSignOut;
     TextView loginCheck;
@@ -38,8 +40,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         providers = Arrays.asList(
-                new AuthUI.IdpConfig.EmailBuilder().build(),
-                new AuthUI.IdpConfig.PhoneBuilder().build()
+                //new AuthUI.IdpConfig.PhoneBuilder().build(),
+                new AuthUI.IdpConfig.EmailBuilder().build()
         );
 
         loginCheck = findViewById(R.id.loginCheck);
@@ -49,19 +51,21 @@ public class MainActivity extends AppCompatActivity {
         buttonSignOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AuthUI.getInstance().signOut(MainActivity.this)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                buttonSignOut.setEnabled(false);
-                                showSignInOptions();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(MainActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+//                AuthUI.getInstance().signOut(MainActivity.this)
+//                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<Void> task) {
+//                                buttonSignOut.setEnabled(false);
+//                                showSignInOptions();
+//                            }
+//                        }).addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Toast.makeText(MainActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+                mAuth.signOut();
+                updateUI(null);
             }
         });
 
@@ -85,13 +89,22 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI(FirebaseUser user) {
         if (user != null) {
-            loginCheck.setText("Logado");
+            if (!user.isEmailVerified()) {
+            loginCheck.setText("Email não verificado!");
+            loginCheck.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    sendEmailVerification();
+                }
+            });
+            } else {
+                loginCheck.setText("Email verificado!");
+            }
         } else {
-            //Intent intent = new Intent(this, LoginActivity.class);
-            //startActivity(intent);
-            //finish();
-            loginCheck.setText("Deslogado");
-            showSignInOptions();
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+            finish();
+            //showSignInOptions();
         }
     }
 
@@ -115,5 +128,27 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, ""+response.getError().getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void sendEmailVerification() {
+
+        final FirebaseUser user = mAuth.getCurrentUser();
+        user.sendEmailVerification()
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()) {
+                            Toast.makeText(MainActivity.this,
+                                    "Verification email sent to " + user.getEmail(),
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e(TAG, "sendEmailVerification", task.getException());
+                            Toast.makeText(MainActivity.this,
+                                    "Failed to send verification email.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 }
