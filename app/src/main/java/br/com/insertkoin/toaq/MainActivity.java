@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         openCamera.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(MainActivity.this, QRCamera.class);
+            Intent intent = new Intent(MainActivity.this, ExemploDB.class);
             MainActivity.this.startActivity(intent);
         }
     });
