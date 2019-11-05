@@ -83,7 +83,7 @@ public class ExemploDB extends AppCompatActivity {
                 date = dateFormat.format(calendar.getTime());
 
                 if(!insertdata.isEmpty()){
-                    mDatabase.child(user).child("aulateste01").child("20191105").setValue(insertdata);
+                    mDatabase.child(user).child("aulateste01").child(date).setValue(insertdata);
                 } else {
                     Toast.makeText(ExemploDB.this,"Campo vazio",Toast.LENGTH_SHORT).show();
                 }

@@ -14,9 +14,4 @@
     <string name="entrar">Entrar</string>
     <string name="cadastre">Esqueceu sua senha?</string>
     <string name="recuperacao">Resetar Senha</string>
-    <array name="genres">
-        <item>Rock</item>
-        <item>Pop</item>
-        <item>Folk</item>
-    </array>
 </resources>

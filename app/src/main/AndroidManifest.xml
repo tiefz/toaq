@@ -14,12 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CadastroPhone"></activity>
         <activity android:name=".ExemploDB" />
         <activity android:name=".Login" />
-        <activity
-            android:name=".ui.login.LoginActivity"
-            android:label="@string/title_activity_login" />
         <activity android:name=".QRCamera" />
         <activity android:name=".MainActivity">
             <intent-filter>

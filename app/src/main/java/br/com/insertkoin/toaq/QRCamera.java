@@ -5,6 +5,7 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -17,8 +18,13 @@ import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class QRCamera extends AppCompatActivity {
 
@@ -26,6 +32,11 @@ public class QRCamera extends AppCompatActivity {
     CameraSource cameraSource;
     TextView textView;
     BarcodeDetector barcodeDetector;
+    FirebaseAuth mAuth;
+    private Calendar calendar;
+    private SimpleDateFormat dateFormat;
+    private String date;
+    DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,9 +88,21 @@ public class QRCamera extends AppCompatActivity {
                     textView.post(new Runnable() {
                         @Override
                         public void run() {
+                            mAuth = FirebaseAuth.getInstance();
+                            String sessionUser = mAuth.getCurrentUser().getUid();
+                            calendar = Calendar.getInstance();
+                            dateFormat = new SimpleDateFormat("yyyyMMdd");
+                            date = dateFormat.format(calendar.getTime());
+                            String aulaScan = qrCodes.valueAt(0).displayValue;
+                            mDatabase = FirebaseDatabase.getInstance().getReference().child("users");
+                            mDatabase.child(sessionUser).child(aulaScan).child(date).setValue(true);
+
                             Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
                             vibrator.vibrate(1000);
-                            textView.setText(qrCodes.valueAt(0).displayValue);
+                            textView.setText("Presença registrada em " + qrCodes.valueAt(0).displayValue);
+                            Intent intent = new Intent(QRCamera.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
                         }
                     });
                 }

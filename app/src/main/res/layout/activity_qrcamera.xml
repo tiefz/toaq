@@ -9,7 +9,7 @@
     <SurfaceView
         android:id="@+id/cameraPreview"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="400dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="64dp"
         android:gravity="center"
-        android:text="Scann the code"
+        android:text="Escanear o código"
         app:layout_constraintTop_toBottomOf="@+id/cameraPreview"
         tools:layout_editor_absoluteX="43dp" />
 
