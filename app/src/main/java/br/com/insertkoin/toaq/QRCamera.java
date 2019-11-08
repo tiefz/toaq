@@ -13,6 +13,7 @@ import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
@@ -95,11 +96,12 @@ public class QRCamera extends AppCompatActivity {
                             date = dateFormat.format(calendar.getTime());
                             String aulaScan = qrCodes.valueAt(0).displayValue;
                             mDatabase = FirebaseDatabase.getInstance().getReference().child("users");
-                            mDatabase.child(sessionUser).child(aulaScan).child(date).setValue(true);
+                            mDatabase.child(sessionUser).child(aulaScan).child(date).setValue(date);
 
                             Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
                             vibrator.vibrate(1000);
                             textView.setText("Presença registrada em " + qrCodes.valueAt(0).displayValue);
+                            //Toast.makeText(QRCamera.this, "Presença registrada em"+qrCodes.valueAt(0).displayValue,Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(QRCamera.this, MainActivity.class);
                             startActivity(intent);
                             finish();

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,16 +35,19 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "EmailPassword";
     Button openCamera;
     Button buttonSignOut;
-    TextView loginCheck;
     private FirebaseAuth mAuth;
+    ListView listViewAulas;
+    DatabaseReference mDatabase;
+    List<String> listaAulas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        loginCheck = findViewById(R.id.loginCheck);
         mAuth = FirebaseAuth.getInstance();
+        //final String loggedUser = mAuth.getCurrentUser().getUid();
+        //final DatabaseReference reference = FirebaseDatabase.getInstance().getReferenceFromUrl("https://toaq-b750f.firebaseio.com/users");
 
         buttonSignOut = findViewById(R.id.buttonSignOut);
         buttonSignOut.setOnClickListener(new View.OnClickListener() {
@@ -55,8 +64,8 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             Intent intent = new Intent(MainActivity.this, QRCamera.class);
             MainActivity.this.startActivity(intent);
-        }
-    });
+            }
+        });
 
     }
 
@@ -69,17 +78,35 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI(FirebaseUser user) {
         if (user != null) {
-            if (!user.isEmailVerified()) {
-            loginCheck.setText("Email não verificado!");
-            loginCheck.setOnClickListener(new View.OnClickListener() {
+
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReferenceFromUrl("https://toaq-b750f.firebaseio.com/users");
+            listViewAulas = findViewById(R.id.listViewAulas);
+            listaAulas = new ArrayList<>();
+            String loggedUser = mAuth.getCurrentUser().getUid();
+
+            reference.child(loggedUser).addValueEventListener(new ValueEventListener() {
                 @Override
-                public void onClick(View v) {
-                    sendEmailVerification();
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                    listaAulas.clear();
+
+                    for (DataSnapshot aulaSnapshot : dataSnapshot.child("aulaciencias").getChildren()) {
+
+                        String aula = aulaSnapshot.getValue(String.class);
+                        listaAulas.add(aula);
+
+                    }
+
+                    AulaLista aulaListaAdapter = new AulaLista(MainActivity.this, listaAulas);
+                    listViewAulas.setAdapter(aulaListaAdapter);
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
                 }
             });
-            } else {
-                loginCheck.setText("Email verificado!");
-            }
         } else {
             Intent intent = new Intent(this, Login.class);
             startActivity(intent);
@@ -87,26 +114,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    private void sendEmailVerification() {
-
-        final FirebaseUser user = mAuth.getCurrentUser();
-        user.sendEmailVerification()
-                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-
-                        if (task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this,
-                                    "Verification email sent to " + user.getEmail(),
-                                    Toast.LENGTH_SHORT).show();
-                        } else {
-                            Log.e(TAG, "sendEmailVerification", task.getException());
-                            Toast.makeText(MainActivity.this,
-                                    "Failed to send verification email.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-    }
 }
