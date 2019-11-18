@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
                     listaAulas.clear();
 
-                    for (DataSnapshot aulaSnapshot : dataSnapshot.child("aulaciencias").getChildren()) {
+                    for (DataSnapshot aulaSnapshot : dataSnapshot.child("10016646").getChildren()) {
 
                         String aula = aulaSnapshot.getValue(String.class);
                         listaAulas.add(aula);

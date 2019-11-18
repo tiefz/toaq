@@ -92,7 +92,7 @@ public class QRCamera extends AppCompatActivity {
                             mAuth = FirebaseAuth.getInstance();
                             String sessionUser = mAuth.getCurrentUser().getUid();
                             calendar = Calendar.getInstance();
-                            dateFormat = new SimpleDateFormat("yyyyMMdd");
+                            dateFormat = new SimpleDateFormat("ddMMyyyy-hh:mm");
                             date = dateFormat.format(calendar.getTime());
                             String aulaScan = qrCodes.valueAt(0).displayValue;
                             mDatabase = FirebaseDatabase.getInstance().getReference().child("users");
